@@ -107,7 +107,7 @@ A: 修改代码中的themes字典，添加新的配色方案
 
 Q: 支持直播平台有哪些？
 A: 支持所有标准RTMP协议平台（如Twitch/YouTube/B站等）
-English Documentation EN 
+##english-documentation English Documentation EN 
 A FFmpeg-based 24/7 streaming GUI tool with:
 
 Automatic video loop playback
