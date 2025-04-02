@@ -1,10 +1,42 @@
 # AutoVideoStream
-Video Auto Stream 24/7 ffmpeg
+Video Auto Stream 24/7 ffmpeg Screenshots
+![image](https://github.com/user-attachments/assets/c113d8d6-9dd4-48c9-b142-bf00dda74955)
 # VideoToStream24HForWindows
-VideoToStream24HForWindows
-中文文档 CN
-一个基于FFmpeg的24/7循环推流GUI工具，支持：
+## 目录
+- [中文文档](#中文文档)
+  - [功能特性](#功能特性)
+  - [使用指南](#使用指南)
+  - [系统要求](#系统要求)
+- [English Documentation](#english-documentation)
+  - [Features](#features)
+  - [Quick Start](#quick-start)
+  - [Requirements](#requirements)
 
+---
+
+## 中文文档
+
+### <font size="5">✨ 功能特性</font>
+
+#### <font size="4">🎯 核心功能</font>
+- ​**24/7循环推流**  
+  `√` 自动检测文件夹内视频文件  
+  `√` 无缝循环播放  
+  `√` 支持MP4/MKV/MOV/AVI格式
+
+#### <font size="4">🔧 编码选项</font>
+| 编码类型       | 支持方案                |
+|----------------|-------------------------|
+| 视频编码       | libx264 / NVENC / AMF / QSV |
+| 音频处理       | AAC重编码 / 直接流复制  |
+
+#### <font size="4">🎨 界面特色</font>
+```diff
++ 5种预设主题配色
++ 实时日志监控窗口
++ 中英文双语切换
+
+一个基于FFmpeg的24/7循环推流GUI工具，支持：
 自动循环播放文件夹中的视频
 多种编码器选择（CPU/NVIDIA/AMD/Intel）
 水印添加功能
@@ -146,12 +178,6 @@ A: Modify the themes dictionary in code
 Q: Supported platforms?
 A: Works with all standard RTMP services (Twitch/YouTube/Bilibili etc.)
 
-Screenshots
-![image](https://github.com/user-attachments/assets/c113d8d6-9dd4-48c9-b142-bf00dda74955)
-
-
-License
-MIT License
 
 Author
 QyJoy (V3.0)
