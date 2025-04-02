@@ -1,4 +1,4 @@
-# AutoVideoStream
+# AutoVideoStream Powered By ffmpeg
 Video Auto Stream 24/7 ffmpeg Screenshots
 ![image](https://github.com/user-attachments/assets/40b80d5c-cb67-4916-aa78-5ea65b207943)
 
