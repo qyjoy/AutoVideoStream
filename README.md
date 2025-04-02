@@ -1,6 +1,7 @@
 # AutoVideoStream
 Video Auto Stream 24/7 ffmpeg Screenshots
-![image](https://github.com/user-attachments/assets/c113d8d6-9dd4-48c9-b142-bf00dda74955)
+![image](https://github.com/user-attachments/assets/40b80d5c-cb67-4916-aa78-5ea65b207943)
+
 # VideoToStream24HForWindows
 ## 目录
 - [中文文档](#中文文档)
