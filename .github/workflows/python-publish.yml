@@ -56,9 +56,13 @@ jobs:
         run: |
           # Download the 32-bit standalone Python distribution
           curl -LO https://github.com/indygreg/python-build-standalone/releases/download/20240401/cpython-3.10.12+20240401-i686-pc-windows-msvc-shared-install_only.tar.zst
-          # Create a directory and extract the archive
+          # Create a directory for extraction
           mkdir python310_32
-          tar -I zstd -xf *.zst -C python310_32 --strip-components=1
+          # --- FIX: Use 7z to extract the .tar.zst file ---
+          # 7z x <archive> -so | tar x -C <destination> --strip-components=1
+          # This pipes the output of 7z extraction (to stdout) to tar (from stdin)
+          7z x *.zst -so | tar x -C python310_32 --strip-components=1
+          # --- END FIX ---
           # Add the downloaded python directory to PATH for this step
           echo "$PWD/python310_32/Scripts" >> $GITHUB_PATH
           echo "$PWD/python310_32" >> $GITHUB_PATH
