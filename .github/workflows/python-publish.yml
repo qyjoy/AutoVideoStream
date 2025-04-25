@@ -1,75 +1,66 @@
-name: Cross-platform Build
+name: Python Publish
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
-  build-windows-x64:
-    name: Windows 64-bit
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - run: |
-          pip install pyinstaller
-          pyinstaller --onefile --noconsole --icon=qy.ico Auto24hStream3.3.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: win-x64
-          path: dist/Auto24hStream3.3.exe
+  build:
+    runs-on: macos-latest  # macOS 环境
 
-  build-windows-x86:
-    name: Windows 32-bit
-    runs-on: windows-latest
-    env:
-      PYINSTALLER_PYTHON: "C:\\Python310-32\\python.exe"
     steps:
-      - uses: actions/checkout@v4
-      - name: Download 32-bit Python and use it
-        run: |
-          curl -LO https://github.com/indygreg/python-build-standalone/releases/download/20240401/cpython-3.10.12+20240401-i686-pc-windows-msvc-shared-install_only.tar.zst
-          mkdir python310
-          tar -I zstd -xf *.zst -C python310 --strip-components=1
-          python310/python.exe -m pip install pyinstaller
-          python310/python.exe -m PyInstaller --onefile --noconsole --icon=qy.ico Auto24hStream3.3.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: win-x86
-          path: dist/Auto24hStream3.3.exe
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-  build-linux:
-    name: Linux x64
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - run: |
-          pip install pyinstaller
-          pyinstaller --onefile --icon=qy.ico Auto24hStream3.3.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: linux-x64
-          path: dist/Auto24hStream3.3
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'  # 根据你的需求修改Python版本
 
-  build-macos:
-    name: macOS (x64/arm64 universal)
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - run: |
-          pip install pyinstaller
-          pyinstaller --windowed --onefile --icon=qy.ico Auto24hStream3.3.py
-      - uses: actions/upload-artifact@v4
-        with:
-          name: macos-universal
-          path: dist/Auto24hStream3.3.app
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pyinstaller pillow  # 安装PyInstaller和Pillow
+        python -m pip install -r requirements.txt  # 如果有额外依赖，确保从requirements.txt安装
+
+    - name: Copy icon for macOS
+      run: |
+        cp qy.icns /Users/runner/work/AutoVideoStream/AutoVideoStream/  # 复制图标到项目目录
+
+    - name: Create PyInstaller spec file for macOS
+      run: |
+        echo "
+a = Analysis(
+    ['Auto24hStream3.3.py'],
+    pathex=['/Users/runner/work/AutoVideoStream/AutoVideoStream'],
+    binaries=[],
+    datas=[('/Users/runner/work/AutoVideoStream/AutoVideoStream/qy.icns', '.')],  # 添加图标文件到打包数据
+    hiddenimports=[],
+    hookspath=[],
+    runtime_hooks=[],
+    excludes=[],
+    win_no_prefer_redirects=False,
+    win_private_assemblies=False,
+    cipher=block_cipher,
+    noarchive=False,
+)
+
+app = BUNDLE(
+    a,
+    name='Auto24hStream3.3',
+    icon='/Users/runner/work/AutoVideoStream/AutoVideoStream/qy.icns',  # 使用qy.icns作为icon
+    bundle_identifier=None,
+)" > Auto24hStream3.3.spec
+
+    - name: Build for macOS
+      run: |
+        pyinstaller Auto24hStream3.3.spec  # 创建MacOS可执行文件
+
+    - name: Upload release assets
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          dist/Auto24hStream3.3.app.zip  # 上传Mac可执行文件，注意修改路径
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
