@@ -33,25 +33,25 @@ jobs:
 
     - name: Create PyInstaller spec file for macOS
       run: |
-        # 使用 | 符号来处理多行字符串，避免YAML语法冲突
-        echo "
+        # Use a multi-line string directly with redirection
+        cat << EOF > Auto24hStream3.3.spec
 a = Analysis(
     ['Auto24hStream3.3.py'],
-    pathex=['.'], # 使用相对路径 '.' 表示当前工作目录
+    pathex=['.'], # Use relative path '.' for current working directory
     binaries=[],
-    datas=[('qy.icns', '.')], # 添加图标文件到打包数据
+    datas=[('qy.icns', '.')], # Add icon file to packaged data
     hiddenimports=[],
     hookspath=[],
     runtime_hooks=[],
     excludes=[],
     win_no_prefer_redirects=False,
     win_private_assemblies=False,
-    cipher=None, # 如果不需要加密，可以设置为 None
+    cipher=None, # Set to None if encryption is not needed
     noarchive=False,
 )
 
 pyz = PYZ(a.pure, a.zipped_data,
-             cipher=None) # 如果不需要加密，可以设置为 None
+             cipher=None) # Set to None if encryption is not needed
 
 exe = EXE(pyz,
           a.scripts,
@@ -63,10 +63,10 @@ exe = EXE(pyz,
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
-          upx=True, # 可以尝试启用UPX压缩
+          upx=True, # Try enabling UPX compression
           upx_exclude=[],
           runtime_tmpdir=None,
-          console=False, # GUI应用设置为 False
+          console=False, # Set to False for GUI applications
           disable_windowed_traceback=False,
           argv_emulation=False,
           target_arch=None,
@@ -74,41 +74,41 @@ exe = EXE(pyz,
           entitlements_file=None )
 
 app = BUNDLE(exe,
-           name='Auto24hStream3.3.app', # 完整的应用名称
-           icon='qy.icns', # 使用qy.icns作为icon
-           bundle_identifier='com.yourcompany.auto24hstream', # 建议设置一个唯一的bundle identifier
-           info_plist={ # 添加Info.plist信息
+           name='Auto24hStream3.3.app', # Full application name
+           icon='qy.icns', # Use qy.icns as the icon
+           bundle_identifier='com.yourcompany.auto24hstream', # Recommended to set a unique bundle identifier
+           info_plist={ # Add Info.plist information
                'CFBundleDisplayName': 'AutoVideoStreamerGUI',
-               'CFBundleShortVersionString': '3.3', # 应用版本
-               'CFBundleVersion': '${{ github.run_number }}', # 可以使用GitHub Actions运行号作为构建版本
-               'NSHumanReadableCopyright': '© 2023 Your Name', # 版权信息
-               'LSUIElement': True # 如果是后台应用可以设置为 True
+               'CFBundleShortVersionString': '3.3', # Application version
+               'CFBundleVersion': '${{ github.run_number }}', # Can use GitHub Actions run number as build version
+               'NSHumanReadableCopyright': '© 2023 Your Name', # Copyright information
+               'LSUIElement': True # Set to True for background applications if applicable
            })
-" > Auto24hStream3.3.spec # 使用 echo 写入文件
-        # 注意：上面的spec文件内容是基于PyInstaller的BUNDLE模式进行了一些补充和调整，
-        # 确保与您的实际需求和PyInstaller版本兼容。特别是cipher和BUNDLE的定义。
-        # 如果您使用的是较旧的PyInstaller版本，BUNDLE的参数可能略有不同。
-        # 建议参考PyInstaller官方文档生成spec文件。
+EOF
+        # Note: The spec file content above is adjusted based on PyInstaller's BUNDLE mode.
+        # Ensure compatibility with your actual needs and PyInstaller version.
+        # Refer to the official PyInstaller documentation for generating spec files.
+
 
     - name: Build for macOS
       run: |
-        pyinstaller --clean Auto24hStream3.3.spec # 创建MacOS可执行文件，添加 --clean 清理旧文件
+        pyinstaller --clean Auto24hStream3.3.spec # Create MacOS executable, add --clean to clean old files
 
     - name: Archive app
       run: |
-        # 压缩 .app 文件以便上传
+        # Compress the .app file for uploading
         cd dist
         zip -r Auto24hStream3.3.app.zip Auto24hStream3.3.app
 
     - name: Upload release assets
-      # 只有在创建新的release时才上传，避免每次push都创建release
+      # Only upload when creating a new release tag
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
         files: |
-          dist/Auto24hStream3.3.app.zip # 上传Mac可执行文件
-        # name: Release ${{ github.ref_name }} # 可以自定义Release名称
-        # body: | # 可以自定义Release描述
+          dist/Auto24hStream3.3.app.zip # Upload Mac executable file
+        # name: Release ${{ github.ref_name }} # You can customize the Release name
+        # body: | # You can customize the Release description
         #   Automated build of version ${{ github.ref_name }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
