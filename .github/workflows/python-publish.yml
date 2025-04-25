@@ -46,14 +46,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Python 3.10 (x86)
+      - name: Install 32-bit Python (using Chocolatey)
         run: |
-          # Manually install 32-bit Python (Windows x86) if needed
-          # Download and extract Python 3.10 for Windows x86 (32-bit)
-          curl -LO https://www.python.org/ftp/python/3.10.12/python-3.10.12-embed-win32.zip
-          unzip python-3.10.12-embed-win32.zip -d python310_32
-          echo "$PWD/python310_32" >> $GITHUB_PATH
-          echo "$PWD/python310_32/Scripts" >> $GITHUB_PATH
+          choco install python --version=3.10.12 --x86 -y
+          refreshenv
 
       - name: Install dependencies (Windows x86)
         run: |
