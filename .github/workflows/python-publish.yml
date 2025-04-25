@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch: # 允许手动触发
+  workflow_dispatch: # Allows manual triggering
 
 jobs:
   build-windows-x64:
@@ -18,15 +18,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          architecture: 'x64'
+          architecture: 'x64' # Explicitly request x64
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # Install pyinstaller and pillow (for icon handling)
           pip install pyinstaller pillow
 
       - name: Build with PyInstaller (Windows x64)
         run: |
+          # --onefile: Create a single executable
+          # --noconsole: Hide console window (for GUI app)
+          # --icon: Specify the icon file
           pyinstaller --onefile --noconsole --icon=qy.ico Auto24hStream3.3.py
 
       - name: Upload artifact (Windows x64)
@@ -42,21 +46,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download and Set up Python 3.10 (x86)
+      - name: Install Python 3.10 (x86)
         run: |
-          curl -LO https://github.com/indygreg/python-build-standalone/releases/download/20240401/cpython-3.10.12+20240401-i686-pc-windows-msvc-shared-install_only.tar.zst
-          mkdir python310_32
-          7z x *.zst -so | tar x -C python310_32 --strip-components=1
-          echo "$PWD/python310_32/Scripts" >> $GITHUB_PATH
+          # Manually install 32-bit Python (Windows x86) if needed
+          # Download and extract Python 3.10 for Windows x86 (32-bit)
+          curl -LO https://www.python.org/ftp/python/3.10.12/python-3.10.12-embed-win32.zip
+          unzip python-3.10.12-embed-win32.zip -d python310_32
           echo "$PWD/python310_32" >> $GITHUB_PATH
+          echo "$PWD/python310_32/Scripts" >> $GITHUB_PATH
 
       - name: Install dependencies (Windows x86)
         run: |
+          # Ensure pip is updated using the correct python
           python -m pip install --upgrade pip
+          # Install pyinstaller and pillow using the correct python
           python -m pip install pyinstaller pillow
 
       - name: Build with PyInstaller (Windows x86)
         run: |
+          # --onefile: Create a single executable
+          # --noconsole: Hide console window (for GUI app)
+          # --icon: Specify the icon file
           python -m PyInstaller --onefile --noconsole --icon=qy.ico Auto24hStream3.3.py
 
       - name: Upload artifact (Windows x86)
@@ -76,15 +86,18 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          architecture: 'x64'
+          architecture: 'x64' # Explicitly request x64
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # Install pyinstaller and pillow (for icon handling)
           pip install pyinstaller pillow
 
       - name: Build with PyInstaller (Linux x64)
         run: |
+          # --onefile: Create a single executable
+          # --icon: Specify the icon file (icon support varies by desktop environment)
           pyinstaller --onefile --icon=qy.ico Auto24hStream3.3.py
 
       - name: Upload artifact (Linux x64)
@@ -104,14 +117,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
+          # macOS runners typically support universal builds with default setup
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          # Install pyinstaller and pillow (for icon handling)
           pip install pyinstaller pillow
 
       - name: Build with PyInstaller (macOS .app)
         run: |
+          # --windowed: Create a macOS app bundle (.app)
+          # --onefile: Package into a single executable within the app bundle (common)
+          # --icon: Specify the .icns icon file
           pyinstaller --windowed --onefile --icon=qy.icns Auto24hStream3.3.py
 
       - name: Upload artifact (macOS .app)
@@ -119,16 +137,20 @@ jobs:
         with:
           name: macos-app
           path: dist/Auto24hStream3.3.app
+          # Note: Uploading the .app directory directly. It will be zipped by the action.
 
   create-release:
     name: Create GitHub Release
+    # This job depends on all build jobs completing successfully
     needs: [build-windows-x64, build-windows-x86, build-linux, build-macos]
+    # This job only runs when a tag is pushed
     if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     steps:
       - name: Download all build artifacts
         uses: actions/download-artifact@v4
         with:
+          # Download all artifacts from the dependent jobs
           path: artifacts
 
       - name: List downloaded artifacts (for debugging)
@@ -137,6 +159,6 @@ jobs:
       - name: Create Release and Upload Assets
         uses: softprops/action-gh-release@v1
         with:
-          files: artifacts/*/*
+          files: artifacts/*/* # This glob pattern should match files inside artifact subdirectories
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Automatically provided token
