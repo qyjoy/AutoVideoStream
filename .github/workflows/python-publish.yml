@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-windows-x64:
+  build-windows:
     name: Windows 64-bit
     runs-on: windows-latest
     steps:
@@ -15,30 +15,12 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - run: pip install pyinstaller
-      - run: pyinstaller --onefile --noconsole --icon=qy.ico Auto24hStream3.3.py
+      - run: |
+          pip install pyinstaller
+          pyinstaller --onefile --noconsole --icon=qy.ico Auto24hStream3.3.py
       - uses: actions/upload-artifact@v3
         with:
           name: win-x64
-          path: dist/Auto24hStream3.3.exe
-
-  build-windows-x86:
-    name: Windows 32-bit
-    runs-on: windows-latest
-    env:
-      PYINSTALLER_PYTHON: "C:\\Python310-32\\python.exe"
-    steps:
-      - uses: actions/checkout@v3
-      - name: Download 32-bit Python and use it
-        run: |
-          curl -LO https://github.com/indygreg/python-build-standalone/releases/download/20240401/cpython-3.10.12+20240401-i686-pc-windows-msvc-shared-install_only.tar.zst
-          mkdir python310
-          tar -I zstd -xf *.zst -C python310 --strip-components=1
-          python310/python.exe -m pip install pyinstaller
-          python310/python.exe -m PyInstaller --onefile --noconsole --icon=qy.ico Auto24hStream3.3.py
-      - uses: actions/upload-artifact@v3
-        with:
-          name: win-x86
           path: dist/Auto24hStream3.3.exe
 
   build-linux:
@@ -51,7 +33,7 @@ jobs:
           python-version: '3.10'
       - run: |
           pip install pyinstaller
-          pyinstaller --onefile Auto24hStream3.3.py
+          pyinstaller --onefile --icon=qy.ico Auto24hStream3.3.py
       - uses: actions/upload-artifact@v3
         with:
           name: linux-x64
@@ -67,7 +49,7 @@ jobs:
           python-version: '3.10'
       - run: |
           pip install pyinstaller
-          pyinstaller --windowed --onefile Auto24hStream3.3.py
+          pyinstaller --windowed --onefile --icon=qy.ico Auto24hStream3.3.py
       - uses: actions/upload-artifact@v3
         with:
           name: macos-universal
