@@ -46,10 +46,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install 32-bit Python (using Chocolatey)
+      - name: Install 32-bit Python (Windows x86) using curl (if choco fails)
         run: |
-          choco install python --version=3.10.12 --x86 -y
-          refreshenv
+          curl -LO https://www.python.org/ftp/python/3.10.12/python-3.10.12-embed-win32.zip
+          Expand-Archive -Path python-3.10.12-embed-win32.zip -DestinationPath $env:ProgramFiles\Python310
+          setx PATH "$env:ProgramFiles\Python310;$env:PATH"
 
       - name: Install dependencies (Windows x86)
         run: |
