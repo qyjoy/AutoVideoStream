@@ -18,7 +18,7 @@ jobs:
       - run: |
           pip install pyinstaller
           pyinstaller --onefile --noconsole --icon=qy.ico Auto24hStream3.3.py
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v2  # Change to v2
         with:
           name: win-x64
           path: dist/Auto24hStream3.3.exe
@@ -34,7 +34,7 @@ jobs:
       - run: |
           pip install pyinstaller
           pyinstaller --onefile --icon=qy.ico Auto24hStream3.3.py
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v2  # Change to v2
         with:
           name: linux-x64
           path: dist/Auto24hStream3.3
@@ -50,7 +50,7 @@ jobs:
       - run: |
           pip install pyinstaller
           pyinstaller --windowed --onefile --icon=qy.ico Auto24hStream3.3.py
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v2  # Change to v2
         with:
           name: macos-universal
           path: dist/Auto24hStream3.3.app
