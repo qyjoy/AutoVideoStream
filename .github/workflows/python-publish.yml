@@ -14,20 +14,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Install 32-bit Python (Windows x86) using PowerShell
+      # Step 2: Install 32-bit Python (Windows x86) using PowerShell (Python 3.9)
       - name: Install 32-bit Python (Windows x86) using PowerShell
         run: |
-          # Download Python using Invoke-WebRequest (PowerShell's native method)
-          Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.10.12/python-3.10.12-embed-win32.zip -OutFile python-3.10.12-embed-win32.zip
+          # Download Python 3.9 version using Invoke-WebRequest (PowerShell's native method)
+          Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.9.12/python-3.9.12-embed-win32.zip -OutFile python-3.9.12-embed-win32.zip
           
           # Check if the file exists and its size
-          ls -lh python-3.10.12-embed-win32.zip
+          ls -lh python-3.9.12-embed-win32.zip
           
           # Unzip the downloaded file
-          Expand-Archive -Path python-3.10.12-embed-win32.zip -DestinationPath $env:ProgramFiles\Python310
+          Expand-Archive -Path python-3.9.12-embed-win32.zip -DestinationPath $env:ProgramFiles\Python39
           
           # Add the Python directory to PATH
-          setx PATH "$env:ProgramFiles\Python310;$env:PATH"
+          setx PATH "$env:ProgramFiles\Python39;$env:PATH"
           
       # Step 3: Install dependencies (Windows x86)
       - name: Install dependencies (Windows x86)
