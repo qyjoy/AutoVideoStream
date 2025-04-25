@@ -30,7 +30,7 @@ jobs:
 
     - name: Create PyInstaller spec file for macOS
       run: |
-        echo "
+        cat <<EOF > Auto24hStream3.3.spec
 a = Analysis(
     ['Auto24hStream3.3.py'],
     pathex=['/Users/runner/work/AutoVideoStream/AutoVideoStream'],
@@ -51,7 +51,8 @@ app = BUNDLE(
     name='Auto24hStream3.3',
     icon='/Users/runner/work/AutoVideoStream/AutoVideoStream/qy.icns',  # 使用qy.icns作为icon
     bundle_identifier=None,
-)" > Auto24hStream3.3.spec
+)
+EOF
 
     - name: Build for macOS
       run: |
