@@ -10,38 +10,28 @@ jobs:
     name: Windows 32-bit
     runs-on: windows-latest
     steps:
-      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Install 32-bit Python (Windows x86) using PowerShell (Python 3.9)
-      - name: Install 32-bit Python (Windows x86)
+      - name: Download and install Python 3.9.13 (x86)
         run: |
-          # Download Python 3.9 embed package
-          Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.9.12/python-3.9.12-embed-win32.zip -OutFile python39.zip
+          Invoke-WebRequest -Uri https://www.python.org/ftp/python/3.9.13/python-3.9.13.exe -OutFile python-installer.exe
+          Start-Process -FilePath python-installer.exe -ArgumentList '/quiet InstallAllUsers=1 PrependPath=1 Include_test=0 TargetDir="C:\Python39"' -Wait
+          echo "C:\Python39" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
-          # Check file info
-          Get-Item python39.zip
+      - name: Check Python & pip
+        run: |
+          python --version
+          pip --version
 
-          # Unzip to folder
-          Expand-Archive -Path python39.zip -DestinationPath python39
-
-          # Add extracted folder to PATH
-          echo "$PWD\python39" >> $env:GITHUB_PATH
-
-      # Step 3: Install dependencies
       - name: Install dependencies
         run: |
-          ./python39/python.exe -m ensurepip
-          ./python39/python.exe -m pip install --upgrade pip
-          ./python39/python.exe -m pip install pyinstaller pillow
+          pip install pyinstaller pillow
 
-      # Step 4: Build with PyInstaller
       - name: Build executable
         run: |
-          ./python39/python.exe -m PyInstaller --onefile --noconsole --icon=qy.ico Auto24hStream3.3.py
+          pyinstaller --onefile --noconsole --icon=qy.ico Auto24hStream3.3.py
 
-      # Step 5: Upload build artifact
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
