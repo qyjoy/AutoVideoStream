@@ -8,7 +8,7 @@ import time
 import sys
 import webbrowser
 
-VIDEO_EXTENSIONS = ["*.mp4", "*.mkv", "*.mov", "*.avi", "*.flv"]
+VIDEO_EXTENSIONS = ["*.webm", "*.mp4", "*.mkv", "*.mov", "*.avi", "*.flv"]
 FFMPEG_DEFAULT_PATH = "ffmpeg"  # Assume ffmpeg is in PATH
 DEFAULT_LANG = "zh_CN"
 VERSION = '3.3 FE' # Version updated
