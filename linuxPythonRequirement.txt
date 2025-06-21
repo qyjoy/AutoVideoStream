@@ -1,0 +1,7 @@
+python3 streamer_cli.py \
+  --rtmp rtmp://your.server/live \
+  --key your_stream_key \
+  --video-dir /path/to/videos \
+  --encoder libx264 \
+  --audio aac \
+  --watermark /path/to/logo.png  # (可选)
