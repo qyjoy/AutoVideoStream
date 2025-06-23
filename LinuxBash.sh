@@ -100,11 +100,8 @@ stream_start() {
     local full_rtmp_url video_folder
     while true; do
         read -p "$(echo -e "${YELLOW}Enter full RTMP URL (e.g., rtmp://a.rtmp.youtube.com/live2/xxxx-xxxx): ${FONT_RESET}")" full_rtmp_url_raw
-        # 去除前后空格、不可见字符
         full_rtmp_url=$(echo "$full_rtmp_url_raw" | tr -d '\r\n\t' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
-        # 基本校验
         if [[ "$full_rtmp_url" =~ ^rtmp(s)?://.+ ]]; then
-            # 自动去除多余的重复斜杠（比如/xxxx//xxxx -> /xxxx/xxxx）
             full_rtmp_url=$(echo "$full_rtmp_url" | sed 's#//*#/#g;s#:/#://#')
             echo -e "${GREEN}RTMP URL: ${BLUE}${full_rtmp_url}${FONT_RESET}"
             break
@@ -140,13 +137,13 @@ stream_start() {
             echo -e "${BLUE}--------------------------------------------------${FONT_RESET}"
             echo -e "${GREEN}Streaming: $video_file${FONT_RESET}"
             echo -e "${GREEN}RTMP: $full_rtmp_url${FONT_RESET}"
-            ionice -c 2 -n 0 nice -n -20 \
+            #ionice -c 2 -n 0 nice -n -20 \ #you dont need to nice20 and -re
             ffmpeg -hide_banner \
                 -nostdin \
                 -analyzeduration 10M -probesize 10M \
                 -i "$video_file" -vf "scale=1280:720" -r 35 \
                 -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p \
-                -maxrate 4500k -bufsize 90000k -g 70 -keyint_min 70 -sc_threshold 0 \
+                -maxrate 4000k -bufsize 90000k -g 70 -keyint_min 70 -sc_threshold 0 \
                 -c:a aac -b:a 128k -ar 44100  \
                 -threads 0 \
                 -f flv \
