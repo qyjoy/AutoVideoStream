@@ -20,7 +20,13 @@ command_exists() { command -v "$1" >/dev/null 2>&1; }
 ffmpeg_check_install() {
     if command_exists ffmpeg; then
         echo -e "${GREEN}FFmpeg is already installed.${FONT_RESET}"
-        FFMPEG_PATH=$(command -v ffmpeg)
+         if [ -x /usr/bin/ffmpeg ]; then
+     FFMPEG_PATH="/usr/bin/ffmpeg"
+ elif [ -x /usr/local/bin/ffmpeg ]; then
+     FFMPEG_PATH="/usr/local/bin/ffmpeg"
+ else
+     FFMPEG_PATH=$(command -v ffmpeg)
+ fi
         echo -e "${GREEN}Current FFmpeg version:${FONT_RESET}"
         "$FFMPEG_PATH" -version | head -n 1
         read -p "$(echo -e "${YELLOW}Skip FFmpeg installation/update? (yes/no, default: yes): ${FONT_RESET}")" skip_ffmpeg_install
@@ -91,32 +97,21 @@ install_latest_ffmpeg() {
 
 stream_start() {
     echo -e "${BLUE}Stream setup...${FONT_RESET}"
-    local rtmp_server_url stream_key full_rtmp_url video_folder
+    local full_rtmp_url video_folder
     while true; do
-        read -p "$(echo -e "${YELLOW}Enter RTMP Server URL (e.g., rtmp://a.rtmp.youtube.com/live2): ${FONT_RESET}")" rtmp_server_url
-        if [[ "$rtmp_server_url" =~ ^rtmp(s)?:// ]]; then break
-        else echo -e "${RED}RTMP URL must start with 'rtmp://' or 'rtmps://'. Try again.${FONT_RESET}"; fi
+        read -p "$(echo -e "${YELLOW}Enter full RTMP URL (e.g., rtmp://a.rtmp.youtube.com/live2/xxxx-xxxx): ${FONT_RESET}")" full_rtmp_url_raw
+        # 去除前后空格、不可见字符
+        full_rtmp_url=$(echo "$full_rtmp_url_raw" | tr -d '\r\n\t' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+        # 基本校验
+        if [[ "$full_rtmp_url" =~ ^rtmp(s)?://.+ ]]; then
+            # 自动去除多余的重复斜杠（比如/xxxx//xxxx -> /xxxx/xxxx）
+            full_rtmp_url=$(echo "$full_rtmp_url" | sed 's#//*#/#g;s#:/#://#')
+            echo -e "${GREEN}RTMP URL: ${BLUE}${full_rtmp_url}${FONT_RESET}"
+            break
+        else
+            echo -e "${RED}Invalid RTMP URL. Must start with 'rtmp://' or 'rtmps://'. Try again.${FONT_RESET}"
+        fi
     done
-    while true; do
-        read -p "$(echo -e "${YELLOW}Enter Stream Key (YouTube: xxxx-xxxx-xxxx-xxxx, Bilibili: ?streamname=...&key=...): ${FONT_RESET}")" stream_key
-        [ -n "$stream_key" ] && break
-        echo -e "${RED}Stream key cannot be empty. Try again.${FONT_RESET}"
-    done
-    if [[ "$stream_key" == \?* ]]; then
-        rtmp_server_url_trimmed="${rtmp_server_url%/}"
-        full_rtmp_url="${rtmp_server_url_trimmed}${stream_key}"
-    else
-        rtmp_server_url_trimmed="${rtmp_server_url%/}"
-        stream_key_trimmed="${stream_key#\/}"
-        full_rtmp_url="${rtmp_server_url_trimmed}/${stream_key_trimmed}"
-    fi
-    echo -e "${GREEN}Full RTMP URL: ${FONT_RESET}${BLUE}${full_rtmp_url}${FONT_RESET}"
-    local warn_url=false
-    if [[ "$stream_key" != \?* && ("$stream_key" == rtmp* || "$stream_key" == http*) ]]; then
-        warn_url=true
-        echo -e "${RED}Warning: Stream Key looks like a full URL.${FONT_RESET}"
-        echo -e "${YELLOW}Double-check for mistakes.${FONT_RESET}"
-    fi
     while true; do
         read -p "$(echo -e "${YELLOW}Enter video directory (absolute path, e.g., /opt/videos): ${FONT_RESET}")" video_folder
         if [ -d "$video_folder" ]; then
@@ -138,23 +133,22 @@ stream_start() {
         done
         mapfile -t video_files < <(eval "find \"$video_folder\" -type f \( $find_options_str \) -print0" | shuf -z | xargs -0 -r printf "%s\n")
         if [ ${#video_files[@]} -eq 0 ]; then
-            echo -e "${RED}No video files found. Waiting 30s...${FONT_RESET}"; sleep 30; continue
+            echo -e "${RED}No video files found. Waiting 15s...${FONT_RESET}"; sleep 15; continue
         fi
         echo -e "${GREEN}Found ${#video_files[@]} video files. Starting playback cycle.${FONT_RESET}"
         for video_file in "${video_files[@]}"; do
             echo -e "${BLUE}--------------------------------------------------${FONT_RESET}"
             echo -e "${GREEN}Streaming: $video_file${FONT_RESET}"
             echo -e "${GREEN}RTMP: $full_rtmp_url${FONT_RESET}"
-            ffmpeg -hide_banner -stats_period 2 \
-                -re -nostdin \
-                -analyzeduration 50M -probesize 50M \
-                -i "$video_file" \
-                -c:v libx264 -preset slow -tune zerolatency -pix_fmt yuv420p \
-                -maxrate 5000k -bufsize 7500k -g 120 -keyint_min 120 -sc_threshold 0 \
-                -c:a aac -b:a 128k -ar 44100 \
+            ffmpeg -hide_banner \
+                -nostdin \
+                -analyzeduration 10M -probesize 10M \
+                -i "$video_file" -vf "scale=1280:720" -r 35 \
+                -c:v libx264 -preset ultrafast -tune zerolatency -pix_fmt yuv420p \
+                -maxrate 4500k -bufsize 90000k -g 70 -keyint_min 70 -sc_threshold 0 \
+                -c:a aac -b:a 128k -ar 44100  \
                 -threads 0 \
                 -f flv \
-                -reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 3 \
                 "$full_rtmp_url"
             echo -e "${BLUE}---------------- FFmpeg ended --------------------${FONT_RESET}"
             sleep 0
