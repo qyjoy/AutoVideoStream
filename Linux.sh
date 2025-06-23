@@ -140,6 +140,7 @@ stream_start() {
             echo -e "${BLUE}--------------------------------------------------${FONT_RESET}"
             echo -e "${GREEN}Streaming: $video_file${FONT_RESET}"
             echo -e "${GREEN}RTMP: $full_rtmp_url${FONT_RESET}"
+            ionice -c 2 -n 0 nice -n -20 \
             ffmpeg -hide_banner \
                 -nostdin \
                 -analyzeduration 10M -probesize 10M \
